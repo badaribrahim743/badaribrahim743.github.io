@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Albadar Almaymani — Data Science</title>
+<meta name="description" content="Albadar Ibrahim Almaymani — Data Science graduate with hands-on experience across the full data pipeline, from OCR/PDF extraction and SQL to machine learning and dashboards. Makkah, Saudi Arabia.">
+<meta name="theme-color" content="#06080c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1' y='1' width='30' height='30' rx='7' fill='%2306080c' stroke='%233ee0ff' stroke-opacity='.5'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='12' fill='%233ee0ff' text-anchor='middle'%3EAA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" } }
+</script>
+<style>
+:root{
+  --bg:#06080c;
+  --panel:rgba(11,15,22,.66);
+  --line:rgba(148,163,184,.14);
+  --text:#e7edf5;
+  --muted:#8e9bad;
+  --faint:#5d6a7c;
+  --accent:#3ee0ff;
+  --accent-soft:rgba(62,224,255,.12);
+  --accent-line:rgba(62,224,255,.35);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --pad:clamp(16px,6vw,96px);
+  --f-head:'Space Grotesk',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.65 var(--f-body);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2,h3{font-family:var(--f-head);font-weight:700;letter-spacing:-.025em;margin:0;line-height:1.05}
+p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+strong{color:var(--text);font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+::selection{background:var(--accent);color:#001218}
+
+/* ---------- background layers ---------- */
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 120% 90% at 50% 45%,transparent 45%,rgba(3,4,7,.55) 80%,rgba(3,4,7,.9) 100%)}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+body.no-gl #gl{display:none}
+body.no-gl{background:
+  radial-gradient(ellipse 60% 50% at 78% 30%,rgba(62,224,255,.13),transparent 70%),
+  radial-gradient(ellipse 50% 45% at 15% 85%,rgba(62,224,255,.06),transparent 70%),var(--bg);background-attachment:fixed}
+
+/* ---------- loader ---------- */
+#loader{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;transition:opacity .9s var(--ease),visibility .9s}
+#loader.done{opacity:0;visibility:hidden;pointer-events:none}
+.ld{display:grid;gap:16px;justify-items:center}
+.ld span{font:500 12px var(--f-mono);letter-spacing:.32em;color:var(--muted);padding-left:.32em}
+.ld i{display:block;width:180px;height:1px;background:var(--line);position:relative;overflow:hidden}
+.ld i::after{content:"";position:absolute;inset:0;width:40%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:ldbar 1.3s var(--ease) infinite}
+@keyframes ldbar{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:10;height:68px;padding:0 var(--pad);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  transition:background .4s,border-color .4s,backdrop-filter .4s;border-bottom:1px solid transparent}
+.nav.scrolled{background:rgba(6,8,12,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:var(--line)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;font:600 15px var(--f-head);letter-spacing:-.01em;white-space:nowrap}
+.mono-mark{width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--accent-line);border-radius:8px;font:500 12px var(--f-mono);color:var(--accent);letter-spacing:.04em}
+.nav-links{display:flex;gap:28px}
+.nav-links a{position:relative;text-decoration:none;font-size:14px;color:var(--muted);padding:6px 0;transition:color .3s}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .45s var(--ease)}
+.nav-links a:hover{color:var(--text)}
+.nav-links a.on{color:var(--text)}
+.nav-links a.on::after{transform:scaleX(1)}
+.nav-r{justify-self:end}
+@media (max-width:980px){.nav-links{display:none}.nav{grid-template-columns:1fr auto}}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:44px;padding:0 22px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(11,15,22,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--text);text-decoration:none;font:500 14px var(--f-body);
+  cursor:pointer;transition:border-color .3s,background .3s,color .3s,transform .3s var(--ease);white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#001218;font-weight:600}
+.btn.primary:hover{background:#7ae9ff;border-color:#7ae9ff}
+.btn.sm{height:34px;padding:0 16px;font:500 12px var(--f-mono);letter-spacing:.08em}
+.btn svg{width:15px;height:15px}
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+
+/* ---------- side dots ---------- */
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:12px}
+.dots button{width:6px;height:6px;padding:0;border:0;border-radius:6px;background:var(--faint);cursor:pointer;transition:height .45s var(--ease),background .3s}
+.dots button:hover{background:var(--muted)}
+.dots button.on{height:26px;background:var(--accent)}
+.dots button::before{content:"";position:absolute;margin:-8px}
+@media (max-width:860px){.dots{display:none}}
+
+/* ---------- layout ---------- */
+main{position:relative;z-index:2}
+section{min-height:100vh;min-height:100svh;padding:120px var(--pad);display:flex;flex-direction:column;justify-content:center;position:relative}
+.col{max-width:580px;width:100%}
+.eyebrow{display:flex;align-items:center;gap:12px;font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.22em;color:var(--accent);margin-bottom:22px}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--accent);flex:none}
+h2{font-size:clamp(36px,5.2vw,64px);margin-bottom:28px}
+.lead{color:var(--muted);font-size:17px;max-width:540px}
+
+/* h2 word split */
+.split .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.1em;margin-bottom:-.1em}
+.js .split .w>span{display:inline-block;transform:translateY(105%);transition:transform 1s var(--ease);transition-delay:calc(var(--i)*.07s)}
+.js .split.in .w>span{transform:none}
+
+/* reveal */
+.js [data-r]{opacity:0;translate:0 26px;filter:blur(6px);
+  transition:opacity 1s var(--ease),translate 1s var(--ease),filter 1s var(--ease),transform .5s var(--ease),border-color .3s;
+  transition-delay:var(--d,0s),var(--d,0s),var(--d,0s),0s,0s}
+.js [data-r].in{opacity:1;translate:0 0;filter:none}
+
+/* ---------- cards ---------- */
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transform-style:preserve-3d;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:radial-gradient(360px circle at var(--mx,50%) var(--my,50%),var(--accent-soft),transparent 60%)}
+.card.hot::before{opacity:1}
+.card.hot{border-color:var(--accent-line)}
+.card>*{position:relative}
+.pill{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;border:1px solid var(--accent-line);background:var(--accent-soft);
+  color:var(--accent);font:500 11px var(--f-mono);letter-spacing:.06em;white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font:400 12px var(--f-mono);color:var(--muted);background:rgba(6,8,12,.4)}
+.bullets{display:grid;gap:12px;color:var(--muted);font-size:15px}
+.bullets li{position:relative;padding-left:20px}
+.bullets li::before{content:"";position:absolute;left:2px;top:.72em;width:6px;height:6px;border-radius:50%;border:1px solid var(--accent)}
+
+/* ---------- hero ---------- */
+#hero{justify-content:flex-end;padding-bottom:clamp(56px,10vh,110px)}
+h1{font-size:clamp(40px,4.6vw,66px);margin-bottom:22px}
+h1 .m{display:block}
+h1 .m{color:var(--muted)}
+#hero .lead{margin-bottom:32px}
+.hint{position:absolute;right:clamp(48px,5vw,80px);bottom:clamp(56px,10vh,110px);display:flex;flex-direction:column;align-items:center;gap:16px;
+  writing-mode:vertical-rl;font:400 11px var(--f-mono);letter-spacing:.22em;text-transform:uppercase;color:var(--faint)}
+.hint i{display:block;width:1px;height:64px;background:var(--line);position:relative;overflow:hidden}
+.hint i::after{content:"";position:absolute;left:0;top:0;width:1px;height:40%;background:var(--accent);animation:hint 2.2s var(--ease) infinite}
+@keyframes hint{from{transform:translateY(-100%)}to{transform:translateY(260%)}}
+@media (max-width:860px){.hint{display:none}}
+
+/* ---------- profile ---------- */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:34px 0 12px}
+.stat{padding:20px 22px}
+.stat.wide{grid-column:span 2}
+.num{font:700 clamp(28px,3.2vw,40px)/1.1 var(--f-head);letter-spacing:-.03em;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums}
+.num small{font-size:.55em;color:var(--muted);letter-spacing:-.01em}
+.stat.wide .num{color:var(--accent)}
+.stat p{margin-top:8px;font-size:13.5px;color:var(--muted);line-height:1.5}
+.edu .row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.edu h3{font-size:20px;letter-spacing:-.015em;line-height:1.25}
+.edu p{color:var(--muted);font-size:14.5px;margin-top:8px}
+.edu hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.edu .cert{font-size:14.5px;color:var(--text)}
+
+/* ---------- experience ---------- */
+.timeline{position:relative;display:grid;gap:18px;padding-left:30px;margin-top:8px}
+.timeline::before{content:"";position:absolute;left:5px;top:10px;bottom:10px;width:1px;background:linear-gradient(var(--accent-line),var(--line) 70%,transparent)}
+.job{overflow:visible}
+.job .marker{position:absolute;left:-31px;top:30px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:1px solid var(--accent);box-shadow:0 0 0 4px var(--bg),0 0 14px rgba(62,224,255,.45)}
+.job .marker::after{content:"";position:absolute;inset:2px;border-radius:50%;background:var(--accent)}
+.job h3{font-size:20px;letter-spacing:-.015em;line-height:1.25}
+.job .meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 14px;margin:6px 0 16px;font-size:14px;color:var(--text)}
+.job .meta span:last-child{font:400 12px var(--f-mono);color:var(--accent);letter-spacing:.04em;padding-top:2px}
+
+/* ---------- basair ---------- */
+#basair h2{margin-bottom:18px}
+.site-link{display:inline-flex;margin:18px 0 22px;font:500 13px var(--f-mono);color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line);padding-bottom:2px;transition:border-color .3s}
+.site-link:hover{border-color:var(--accent)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:22px}
+.flow span{display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid var(--accent-line);border-radius:8px;font:500 12px var(--f-mono);color:var(--text);background:rgba(6,8,12,.5)}
+.flow i{font-style:normal;color:var(--accent);font:400 13px var(--f-mono)}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);margin-top:22px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.strip div{padding:16px 14px;border-left:1px solid var(--line);background:rgba(6,8,12,.35)}
+.strip div:first-child{border-left:0}
+.strip b{display:block;font:700 26px/1.1 var(--f-head);letter-spacing:-.03em;color:var(--accent)}
+.strip span{display:block;margin-top:6px;font-size:12.5px;color:var(--muted);line-height:1.35}
+.lbl{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.2em;color:var(--faint);margin:22px 0 10px}
+
+/* ---------- applied ---------- */
+.applied{display:grid;gap:14px;margin-top:30px}
+.kicker{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.2em;color:var(--accent);margin-bottom:8px}
+.applied h3{font-size:20px;letter-spacing:-.015em;line-height:1.25;margin-bottom:14px}
+.applied .tags{margin-top:16px}
+
+/* ---------- skills ---------- */
+.hover-hint{font:400 12px var(--f-mono);color:var(--faint);margin:-8px 0 26px}
+@media (hover:none){.hover-hint{display:none}}
+.groups{display:grid;gap:20px}
+.group h3{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.2em;color:var(--faint);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:rgba(11,15,22,.6);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-size:14px;color:var(--text);cursor:default;user-select:none;
+  transition:border-color .25s,background .25s,color .25s,box-shadow .25s}
+.chip:hover,.chip:focus-visible,.chip.lit{border-color:var(--accent);background:var(--accent-soft);color:#fff;box-shadow:0 0 18px rgba(62,224,255,.18)}
+.chip:focus-visible{border-radius:999px}
+.langs{display:grid;gap:8px;font-size:14.5px;color:var(--muted)}
+.langs li b{color:var(--text);font-weight:500}
+
+/* ---------- contact ---------- */
+#contact{align-items:center;text-align:center}
+#contact .col{display:flex;flex-direction:column;align-items:center}
+#contact .eyebrow{justify-content:center}
+#contact h2{max-width:16ch}
+#contact .btns{justify-content:center;margin-top:34px}
+.mail{margin-top:22px;font:400 13px var(--f-mono);color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line);transition:color .3s,border-color .3s}
+.mail:hover{color:var(--accent);border-color:var(--accent-line)}
+
+/* ---------- footer ---------- */
+footer{position:relative;z-index:2;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding:26px var(--pad) 30px;border-top:1px solid var(--line);
+  font:400 12px var(--f-mono);color:var(--faint);background:rgba(6,8,12,.6)}
+
+/* ---------- 3D labels ---------- */
+#labels{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.l3{position:absolute;left:0;top:0;padding:5px 9px;border:1px solid var(--accent-line);border-radius:6px;background:rgba(6,8,12,.82);
+  color:var(--accent);font:500 11px var(--f-mono);letter-spacing:.06em;white-space:nowrap;opacity:0;will-change:transform,opacity}
+@media (max-width:860px){#labels{display:none}}
+
+/* ---------- mobile ---------- */
+@media (max-width:860px){
+  section{padding:104px 16px 88px}
+  #hero{padding-bottom:56px}
+  .nav{padding:0 16px}
+  .lead{font-size:16px}
+  .card{padding:20px}
+  .stat{padding:18px}
+  .num{font-size:26px}
+  .strip b{font-size:22px}
+  .strip div{padding:14px 10px}
+}
+@media (max-width:400px){
+  .brand .nm{font-size:14px}
+  .btns .btn{padding:0 18px}
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .js [data-r]{opacity:1;translate:none;filter:none;transition:none}
+  .js .split .w>span{transform:none;transition:none}
+  .ld i::after,.hint i::after{animation:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div id="labels" aria-hidden="true"></div>
+
+<div id="loader" role="status" aria-live="polite">
+  <div class="ld"><span>LOADING DATASET</span><i></i></div>
+</div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#hero" aria-label="Albadar Almaymani — back to top"><span class="mono-mark">AA</span><span class="nm">Albadar Almaymani</span></a>
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#profile" data-s="profile">Profile</a>
+    <a href="#experience" data-s="experience">Experience</a>
+    <a href="#basair" data-s="basair">Basair</a>
+    <a href="#applied" data-s="applied">Applied</a>
+    <a href="#skills" data-s="skills">Skills</a>
+    <a href="#contact" data-s="contact">Contact</a>
+  </nav>
+  <div class="nav-r"><a class="btn sm" href="Albadar_Almaymani_CV.pdf" download>CV</a></div>
+</header>
+
+<div class="dots" id="dots" aria-label="Section navigation"></div>
+
+<main>
+
+<!-- HERO -->
+<section id="hero" aria-label="Introduction">
+  <div class="col">
+    <div class="eyebrow" data-r>Data Science Graduate · Makkah, Saudi Arabia</div>
+    <h1 data-r style="--d:.08s">Albadar Ibrahim <span class="m">Almaymani</span></h1>
+    <p class="lead" data-r style="--d:.16s">Hands-on experience across the full data pipeline — from OCR/PDF extraction and SQL to machine learning and dashboards.</p>
+    <div class="btns" data-r style="--d:.24s">
+      <a class="btn primary" href="Albadar_Almaymani_CV.pdf" download>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13h10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download CV</a>
+      <a class="btn" href="#contact">Get in touch</a>
+    </div>
+  </div>
+  <div class="hint" aria-hidden="true">Scroll · move your cursor<i></i></div>
+</section>
+
+<!-- PROFILE -->
+<section id="profile" aria-labelledby="h-profile">
+  <div class="col">
+    <div class="eyebrow" data-r>01 — Profile</div>
+    <h2 id="h-profile" class="split">Raw data in. Decisions out.</h2>
+    <p class="lead" data-r>Data Science graduate with hands-on experience across the full data pipeline — from OCR/PDF extraction and SQL to machine learning and dashboards — who turns raw data into decisions. Built end-to-end data systems and drove key technical decisions on team projects, delivering KPI dashboards that communicate insights to non-technical business stakeholders. A track record of catching data-quality issues others miss.</p>
+
+    <div class="stats">
+      <div class="card stat wide" data-r>
+        <div class="num"><span data-count="4">4</span>–<span data-count="5">5</span>h → ~<span data-count="1">1</span>h</div>
+        <p>Daily operational planning time after the Python system I co-built at Moasherat</p>
+      </div>
+      <div class="card stat" data-r style="--d:.06s">
+        <div class="num"><span data-count="110">110</span>+</div>
+        <p>Staff planned daily</p>
+      </div>
+      <div class="card stat" data-r style="--d:.12s">
+        <div class="num"><span data-count="13">13</span>+</div>
+        <p>Teams covered</p>
+      </div>
+      <div class="card stat" data-r style="--d:.06s">
+        <div class="num"><span data-count="67">67</span></div>
+        <p>Documents extracted with zero errors · Basair</p>
+      </div>
+      <div class="card stat" data-r style="--d:.12s">
+        <div class="num"><span data-count="3.58" data-dec="2">3.58</span><small> / 4.00</small></div>
+        <p>GPA · Excellent</p>
+      </div>
+    </div>
+
+    <div class="card edu" data-r>
+      <div class="row"><h3>Bachelor in Data Science</h3><span class="pill">June 2026</span></div>
+      <p>Umm Al-Qura University — College of Computing · GPA 3.58 / 4.00 · Excellent</p>
+      <hr>
+      <div class="row"><div class="cert">Certification: Fundamentals of Deep Learning — NVIDIA</div><span class="pill">2025</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience" aria-labelledby="h-exp">
+  <div class="col">
+    <div class="eyebrow" data-r>02 — Experience</div>
+    <h2 id="h-exp" class="split">Where the work happened.</h2>
+    <div class="timeline">
+      <article class="card job" data-r>
+        <span class="marker" aria-hidden="true"></span>
+        <h3>Operations &amp; Planning Analyst</h3>
+        <div class="meta"><span>Moasherat Company</span><span>May 2026 – Jun 2026</span></div>
+        <ul class="bullets">
+          <li>Co-built a Python system that automated daily operational planning for <strong>110+ staff across 13+ teams</strong>, cutting a 4–5 hour manual task to ~1 hour.</li>
+          <li>Engineered a rule-based assignment engine with automatic de-duplication to optimize allocation and prevent overlapping work.</li>
+        </ul>
+      </article>
+      <article class="card job" data-r>
+        <span class="marker" aria-hidden="true"></span>
+        <h3>Data Science Cooperative Trainee</h3>
+        <div class="meta"><span>ADALAH IT (QANONIAH)</span><span>Mar 2025 – Aug 2025</span></div>
+        <ul class="bullets">
+          <li>Translated raw subscription and user data into weekly Metabase KPI dashboards, presenting insights to non-technical business stakeholders to support decision-making.</li>
+          <li>Identified and resolved data quality issues such as duplicated records and mislinked invoices to ensure accurate reporting.</li>
+        </ul>
+      </article>
+      <article class="card job" data-r>
+        <span class="marker" aria-hidden="true"></span>
+        <h3>Seasonal Operations Employee</h3>
+        <div class="meta"><span>KSA Hady &amp; Adahi Project</span><span>Hajj 2024 &amp; 2025</span></div>
+        <ul class="bullets">
+          <li>Facilitated sales and organized sacrificial operations under high-pressure conditions during Hajj seasons.</li>
+          <li>Collaborated with team members to manage large-scale operations ensuring smooth coordination and execution.</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- BASAIR -->
+<section id="basair" aria-labelledby="h-basair">
+  <div class="col">
+    <div class="eyebrow" data-r>03 — Graduation Project · 2025</div>
+    <h2 id="h-basair" class="split">Basair</h2>
+    <p class="lead" data-r>A multi-level learning analytics platform — co-developed with a team — serving students, advisors, and department heads.</p>
+    <a class="site-link" href="https://basairedu.com" target="_blank" rel="noopener" data-r>basairedu.com ↗</a>
+    <div class="flow" data-r aria-label="Pipeline">
+      <span>PDF</span><i aria-hidden="true">→</i><span>OCR</span><i aria-hidden="true">→</i><span>Relational schema</span><i aria-hidden="true">→</i><span>Role-based dashboards</span>
+    </div>
+    <div class="card" data-r>
+      <ul class="bullets">
+        <li>Drove the data architecture and key technical decisions for a multi-level learning analytics platform — co-developed with a team — serving students, advisors, and department heads.</li>
+        <li>Implemented a data pipeline using PDF parsing and OCR to extract, normalize, and store transcript data in a relational schema — processing <strong>67 documents with zero extraction errors</strong> and complete field coverage.</li>
+        <li>Built role-based dashboards delivering descriptive, diagnostic, predictive, and prescriptive analytics using OLAP operations grounded in the PERLA framework.</li>
+      </ul>
+      <div class="strip">
+        <div><b>67</b><span>Documents processed</span></div>
+        <div><b>0</b><span>Extraction errors</span></div>
+        <div><b>100%</b><span>Field coverage</span></div>
+      </div>
+      <div class="lbl">Analytics delivered</div>
+      <div class="tags">
+        <span class="tag">Descriptive</span><span class="tag">Diagnostic</span><span class="tag">Predictive</span><span class="tag">Prescriptive</span><span class="tag">OLAP</span><span class="tag">PERLA</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLIED -->
+<section id="applied" aria-labelledby="h-applied">
+  <div class="col">
+    <div class="eyebrow" data-r>04 — Applied Learning</div>
+    <h2 id="h-applied" class="split">Putting coursework into practice.</h2>
+    <p class="lead" data-r>Course applications where I put what I was learning to work — deep learning on chest X-ray images, and wrangling a large veterinary medicines dataset.</p>
+    <div class="applied">
+      <article class="card" data-r>
+        <div class="kicker">Applied · Deep Learning</div>
+        <h3>Chest X-Ray Classification</h3>
+        <ul class="bullets">
+          <li>Built a CNN-based deep learning model to classify chest X-ray images for lung disease detection, designed as a clinical decision-support tool that assists radiologists rather than replacing human diagnosis.</li>
+          <li>Implemented the image classification pipeline (preprocessing, model training, and inference) so that new X-ray scans can be automatically analyzed to support faster, more consistent diagnostic review.</li>
+        </ul>
+        <div class="tags"><span class="tag">CNN</span><span class="tag">Preprocessing</span><span class="tag">Training</span><span class="tag">Inference</span></div>
+      </article>
+      <article class="card" data-r style="--d:.08s">
+        <div class="kicker">Applied · Data Wrangling</div>
+        <h3>Veterinary Medicines Data Wrangling</h3>
+        <ul class="bullets">
+          <li>Analyzed a large veterinary medicines dataset for regulatory compliance and market trends using Pandas and Matplotlib.</li>
+        </ul>
+        <div class="tags"><span class="tag">Pandas</span><span class="tag">Matplotlib</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills" aria-labelledby="h-skills">
+  <div class="col">
+    <div class="eyebrow" data-r>05 — Toolkit</div>
+    <h2 id="h-skills" class="split">What I work with.</h2>
+    <p class="hover-hint" data-r>// hover a skill to light up its node in the network</p>
+    <div class="groups">
+      <div class="group" data-r>
+        <h3>Programming</h3>
+        <div class="chips"><span class="chip" tabindex="0" data-node="0">Python</span><span class="chip" tabindex="0" data-node="1">SQL</span></div>
+      </div>
+      <div class="group" data-r>
+        <h3>ML &amp; Data Libraries</h3>
+        <div class="chips"><span class="chip" tabindex="0" data-node="2">Pandas</span><span class="chip" tabindex="0" data-node="3">NumPy</span><span class="chip" tabindex="0" data-node="4">Scikit-Learn</span></div>
+      </div>
+      <div class="group" data-r>
+        <h3>Visualization</h3>
+        <div class="chips"><span class="chip" tabindex="0" data-node="5">Matplotlib</span><span class="chip" tabindex="0" data-node="6">Seaborn</span><span class="chip" tabindex="0" data-node="7">Plotly</span></div>
+      </div>
+      <div class="group" data-r>
+        <h3>Core Skills</h3>
+        <div class="chips">
+          <span class="chip" tabindex="0" data-node="8">Data Wrangling</span><span class="chip" tabindex="0" data-node="9">KPI Dashboards</span><span class="chip" tabindex="0" data-node="10">OCR &amp; PDF Parsing</span><span class="chip" tabindex="0" data-node="11">Relational Schema Design</span><span class="chip" tabindex="0" data-node="12">Dimensionality Reduction (PCA)</span><span class="chip" tabindex="0" data-node="13">Regulatory Data Analysis</span>
+        </div>
+      </div>
+      <div class="group" data-r>
+        <h3>Tools &amp; Platforms</h3>
+        <div class="chips"><span class="chip" tabindex="0" data-node="14">Metabase</span><span class="chip" tabindex="0" data-node="15">Git</span><span class="chip" tabindex="0" data-node="16">Jupyter Notebook</span></div>
+      </div>
+      <div class="group" data-r>
+        <h3>Languages</h3>
+        <ul class="langs"><li><b>Arabic</b> — Native</li><li><b>English</b> — Professional Working Proficiency</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" aria-labelledby="h-contact">
+  <div class="col">
+    <div class="eyebrow" data-r>06 — Contact</div>
+    <h2 id="h-contact" class="split">Let's turn your data into decisions.</h2>
+    <p class="lead" data-r>Open to data analytics and data science roles. Based in Makkah, Saudi Arabia.</p>
+    <div class="btns" data-r>
+      <a class="btn primary" href="mailto:badaribrahim743@gmail.com">Email me</a>
+      <a class="btn" href="https://linkedin.com/in/albadaralmaymani" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="btn" href="Albadar_Almaymani_CV.pdf" download>Download CV</a>
+    </div>
+    <a class="mail" href="mailto:badaribrahim743@gmail.com" data-r>badaribrahim743@gmail.com</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>© 2026 Albadar Ibrahim Almaymani</span>
+  <span>Built with Three.js · click anywhere to send a pulse</span>
+</footer>
+
+<!-- ================= UI (no 3D dependency) ================= -->
+<script>
+(() => {
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FINE = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const sections = [...document.querySelectorAll('main > section')];
+  const nav = document.getElementById('nav');
+  const links = [...document.querySelectorAll('.nav-links a')];
+  const dotsWrap = document.getElementById('dots');
+
+  // side dots
+  const dots = sections.map(s => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Go to ' + (s.id === 'hero' ? 'top' : s.id));
+    b.addEventListener('click', () => s.scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
+    dotsWrap.appendChild(b);
+    return b;
+  });
+
+  // nav background + active section
+  let active = -1;
+  function onScroll() {
+    nav.classList.toggle('scrolled', scrollY > 40);
+    const probe = innerHeight * 0.45;
+    let idx = 0;
+    sections.forEach((s, i) => { if (s.getBoundingClientRect().top <= probe) idx = i; });
+    if (idx !== active) {
+      active = idx;
+      dots.forEach((d, i) => d.classList.toggle('on', i === idx));
+      const id = sections[idx].id;
+      links.forEach(a => a.classList.toggle('on', a.dataset.s === id));
+    }
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
+  onScroll();
+
+  // h2 word split
+  document.querySelectorAll('h2.split').forEach(h => {
+    const words = h.textContent.trim().split(/\s+/);
+    h.setAttribute('aria-label', h.textContent.trim());
+    h.innerHTML = words.map((w, i) => `<span class="w" aria-hidden="true"><span style="--i:${i}">${w}</span></span>`).join(' ');
+  });
+
+  // count-up
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const counters = [...document.querySelectorAll('[data-count]')];
+  const fmt = (el, v) => { const d = +(el.dataset.dec || 0); return v.toFixed(d); };
+  if (!RM) counters.forEach(el => el.textContent = fmt(el, 0));
+  function runCount(el) {
+    if (RM || el._done) return;
+    el._done = true;
+    const to = parseFloat(el.dataset.count), t0 = performance.now();
+    const step = now => {
+      const t = Math.min(1, (now - t0) / 1600);
+      el.textContent = fmt(el, to * easeOut(t));
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // reveal
+  const targets = [...document.querySelectorAll('[data-r], h2.split')];
+  if (RM || !('IntersectionObserver' in window)) {
+    targets.forEach(el => el.classList.add('in'));
+  } else {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('in');
+        e.target.querySelectorAll('[data-count]').forEach(runCount);
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    targets.forEach(el => io.observe(el));
+  }
+
+  // card tilt + spotlight (desktop, fine pointer)
+  if (FINE && !RM) {
+    document.querySelectorAll('.card').forEach(c => {
+      c.addEventListener('pointermove', e => {
+        if (innerWidth <= 860) return;
+        const r = c.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        c.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+        c.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        c.style.transform = `perspective(900px) rotateX(${((0.5 - py) * 10).toFixed(2)}deg) rotateY(${((px - 0.5) * 10).toFixed(2)}deg)`;
+        c.classList.add('hot');
+      });
+      c.addEventListener('pointerleave', () => { c.style.transform = ''; c.classList.remove('hot'); });
+    });
+  }
+
+  // loader + fallback hooks used by the 3D module
+  const loader = document.getElementById('loader');
+  window.__hideLoader = () => loader.classList.add('done');
+  window.__noGL = () => { document.body.classList.add('no-gl'); window.__hideLoader(); };
+  setTimeout(window.__hideLoader, 4500);
+})();
+</script>
+
+<!-- ================= 3D ENGINE ================= -->
+<script type="module">
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FINE = matchMedia('(hover: hover) and (pointer: fine)').matches;
+const mqMobile = matchMedia('(max-width: 860px)');
+const MOBILE_AT_LOAD = mqMobile.matches;
+const N = MOBILE_AT_LOAD ? 7000 : 15000;
+
+/* ---------- seeded helpers ---------- */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+
+function Builder(seed, extraDefault = 0) {
+  const r = mulberry32(seed);
+  const a = new Float32Array(N * 4);
+  const ex = new Float32Array(N).fill(extraDefault);
+  let i = 0;
+  let spare = null;
+  const gauss = () => {
+    if (spare !== null) { const s = spare; spare = null; return s; }
+    let u = 0, v = 0;
+    while (u === 0) u = r();
+    v = r();
+    const m = Math.sqrt(-2 * Math.log(u));
+    spare = m * Math.sin(6.283185307 * v);
+    return m * Math.cos(6.283185307 * v);
+  };
+  const put = (x, y, z, w, e) => {
+    if (i >= N) return;
+    a[i * 4] = x; a[i * 4 + 1] = y; a[i * 4 + 2] = z; a[i * 4 + 3] = w;
+    if (e !== undefined) ex[i] = e;
+    i++;
+  };
+  const b = {
+    r, gauss, put, a, ex,
+    get count() { return i; },
+    n: f => Math.floor(N * f),
+    line(p, q, count, w0, w1, jit = 0.02, e) {
+      for (let k = 0; k < count; k++) {
+        const t = r();
+        put(p[0] + (q[0] - p[0]) * t + gauss() * jit, p[1] + (q[1] - p[1]) * t + gauss() * jit, p[2] + (q[2] - p[2]) * t + gauss() * jit, w0 + r() * (w1 - w0), e);
+      }
+    },
+    rect(cx, cy, cz, w, h, count, w0, w1, jit = 0.015) {
+      const per = 2 * (w + h);
+      for (let k = 0; k < count; k++) {
+        let u = r() * per, x, y;
+        if (u < w) { x = -w / 2 + u; y = h / 2; }
+        else if ((u -= w) < h) { x = w / 2; y = h / 2 - u; }
+        else if ((u -= h) < w) { x = w / 2 - u; y = -h / 2; }
+        else { u -= w; x = -w / 2; y = -h / 2 + u; }
+        put(cx + x + gauss() * jit, cy + y + gauss() * jit, cz + gauss() * jit, w0 + r() * (w1 - w0));
+      }
+    },
+    sphere(cx, cy, cz, rad, count, w0, w1, e) {
+      for (let k = 0; k < count; k++) {
+        const u = r() * 2 - 1, th = r() * 6.2831853, s = Math.sqrt(1 - u * u);
+        const rr = rad * (0.82 + r() * 0.18);
+        put(cx + s * Math.cos(th) * rr, cy + u * rr, cz + s * Math.sin(th) * rr, w0 + r() * (w1 - w0), e);
+      }
+    },
+    finish() {
+      while (i < N) put(gauss() * 7, gauss() * 4.5, gauss() * 4 - 1, 0.1 + r() * 0.06);
+      // Fisher–Yates on vec4 groups (+ extra channel)
+      for (let k = N - 1; k > 0; k--) {
+        const j = Math.floor(r() * (k + 1));
+        for (let c = 0; c < 4; c++) { const t = a[k * 4 + c]; a[k * 4 + c] = a[j * 4 + c]; a[j * 4 + c] = t; }
+        const t = ex[k]; ex[k] = ex[j]; ex[j] = t;
+      }
+      return a;
+    }
+  };
+  return b;
+}
+
+/* ---------- S0 chaos ---------- */
+function shapeChaos() {
+  const b = Builder(11);
+  for (let k = 0; k < N; k++) {
+    const bright = b.r() < 0.1;
+    b.put(b.gauss() * 7, b.gauss() * 4.5, b.gauss() * 5 - 1, bright ? 0.8 + b.r() * 0.4 : 0.15 + b.r() * 0.3);
+  }
+  return b.finish();
+}
+
+/* ---------- S1 name ---------- */
+async function shapeName() {
+  const FONT = "700 220px 'Space Grotesk'";
+  try {
+    await Promise.race([document.fonts.load(FONT, 'ALBADAR'), new Promise(r => setTimeout(r, 1500))]);
+  } catch (e) { /* fall back to whatever font is available */ }
+  const cv = document.createElement('canvas');
+  cv.width = 1200; cv.height = 300;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.font = FONT + ", 'Arial Black', sans-serif";
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#fff';
+  ctx.fillText('ALBADAR', 600, 150);
+  const img = ctx.getImageData(0, 0, cv.width, cv.height).data;
+  const px = [];
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) {
+    if (img[(y * cv.width + x) * 4 + 3] > 140) {
+      px.push(x, y);
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+  }
+  const b = Builder(23);
+  const cnt = px.length / 2;
+  if (cnt > 0) {
+    const s = 14.2 / (maxX - minX + 1);
+    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+    const need = b.n(0.72);
+    for (let k = 0; k < need; k++) {
+      const j = Math.floor(b.r() * cnt);
+      const x = px[j * 2] + b.r(), y = px[j * 2 + 1] + b.r();
+      b.put((x - cx) * s, -(y - cy) * s + 1.5, (b.r() - 0.5) * 0.28, 0.72 + b.r() * 0.35);
+    }
+  }
+  b.line([-7.1, -0.8, 0], [7.1, -0.8, 0], b.n(0.05), 0.22, 0.34, 0.012);
+  return b.finish();
+}
+
+/* ---------- S2 before/after chart ---------- */
+const H = 1.2, FLOOR = -3.1;
+function box(b, cx, y0, y1, count, eW, fW, top = true) {
+  const hw = 0.7, h = y1 - y0;
+  for (let k = 0; k < count; k++) {
+    let x, y, z;
+    if (b.r() < 0.3) {
+      const L = 4 * h + 8 * 1.4;
+      let u = b.r() * L;
+      if (u < 4 * h) {
+        const e = Math.floor(u / h); y = y0 + (u - e * h);
+        x = cx + ((e & 1) ? hw : -hw); z = (e & 2) ? hw : -hw;
+      } else {
+        u -= 4 * h;
+        const e = Math.min(7, Math.floor(u / 1.4)), s = u - e * 1.4 - hw, kk = e % 4;
+        y = e < 4 ? y0 : y1;
+        if (kk < 2) { x = cx + s; z = kk ? hw : -hw; } else { x = cx + (kk === 2 ? hw : -hw); z = s; }
+      }
+      b.put(x, y, z, eW[0] + b.r() * eW[1]);
+    } else {
+      const sA = h * 1.4, tA = top ? 1.96 : 0, tot = 4 * sA + tA;
+      const u = b.r() * tot;
+      if (u < 4 * sA) {
+        const f = Math.floor(u / sA), s = (b.r() - 0.5) * 1.4;
+        y = y0 + b.r() * h;
+        if (f < 2) { x = cx + s; z = f ? hw : -hw; } else { x = cx + (f === 2 ? hw : -hw); z = s; }
+      } else { x = cx + (b.r() - 0.5) * 1.4; z = (b.r() - 0.5) * 1.4; y = y1; }
+      b.put(x, y, z, fW[0] + b.r() * fW[1]);
+    }
+  }
+}
+function shapeChart() {
+  const b = Builder(37);
+  // floor grid
+  const gN = b.n(0.12), lines = [];
+  for (let g = -3.5; g <= 3.51; g += 0.5) lines.push([[g, FLOOR, -2.5], [g, FLOOR, 2.5]]);
+  for (let g = -2.5; g <= 2.51; g += 0.5) lines.push([[-3.5, FLOOR, g], [3.5, FLOOR, g]]);
+  lines.forEach(l => b.line(l[0], l[1], Math.floor(gN / lines.length), 0.2, 0.32, 0.008));
+  // bar 1: solid 0–4h, faded 4–5h
+  box(b, -1.35, FLOOR, FLOOR + 4 * H, b.n(0.30), [0.95, 0.3], [0.42, 0.25], true);
+  box(b, -1.35, FLOOR + 4 * H, FLOOR + 5 * H, b.n(0.06), [0.34, 0.12], [0.14, 0.08], true);
+  // bar 2: ~1h
+  box(b, 1.35, FLOOR, FLOOR + 1 * H, b.n(0.12), [1.0, 0.3], [0.5, 0.25], true);
+  // arc from top of bar 1 down to top of bar 2
+  const p0 = [-1.35, FLOOR + 5 * H + 0.25, 0], c = [1.1, FLOOR + 5 * H + 0.6, 0], p1 = [1.35, FLOOR + H + 0.35, 0];
+  const aN = b.n(0.08);
+  for (let k = 0; k < aN; k++) {
+    const t = b.r(), m = 1 - t;
+    const x = m * m * p0[0] + 2 * m * t * c[0] + t * t * p1[0];
+    const y = m * m * p0[1] + 2 * m * t * c[1] + t * t * p1[1];
+    b.put(x + b.gauss() * 0.025, y + b.gauss() * 0.025, b.gauss() * 0.025, 1.05 + b.r() * 0.25);
+  }
+  // arrow tip at bar 2
+  b.line([p1[0] - 0.22, p1[1] + 0.28, 0], p1, b.n(0.006), 1.1, 1.3, 0.015);
+  b.line([p1[0] + 0.22, p1[1] + 0.28, 0], p1, b.n(0.006), 1.1, 1.3, 0.015);
+  return b.finish();
+}
+
+/* ---------- S3 career path ---------- */
+const career = t => [-4.6 + 9.2 * t, 1.3 * Math.sin(2.1 * Math.PI * t), 1.9 * Math.cos(1.5 * Math.PI * t) - 0.6];
+const MILES = [0.14, 0.5, 0.86];
+function shapeCareer() {
+  const b = Builder(41);
+  const tN = b.n(0.4);
+  for (let k = 0; k < tN; k++) {
+    const p = career(b.r());
+    const u = b.r() * 2 - 1, th = b.r() * 6.2831853, s = Math.sqrt(1 - u * u), rr = 0.12 * Math.sqrt(b.r());
+    b.put(p[0] + s * Math.cos(th) * rr, p[1] + u * rr, p[2] + s * Math.sin(th) * rr, 0.5 + b.r() * 0.35);
+  }
+  MILES.forEach((t, m) => {
+    const p = career(t);
+    b.sphere(p[0], p[1], p[2], 0.5, b.n(0.07), 1.05, 1.3);
+    const tilt = 1.15 + m * 0.2, rN = b.n(0.035);
+    for (let k = 0; k < rN; k++) {
+      const a = b.r() * 6.2831853;
+      b.put(p[0] + Math.cos(a) * 0.95, p[1] + Math.sin(a) * 0.95 * Math.cos(tilt), p[2] + Math.sin(a) * 0.95 * Math.sin(tilt), 0.55 + b.r() * 0.2);
+    }
+  });
+  return b.finish();
+}
+
+/* ---------- S4 Basair pipeline ---------- */
+function shapePipeline() {
+  const b = Builder(53, 0);
+  // PDF pages
+  const pageN = b.n(0.2) / 5;
+  for (let k = 0; k < 5; k++) {
+    const cx = -4.3 + (k - 2) * 0.1, cy = (k - 2) * 0.08, cz = -(k - 2) * 0.32;
+    const bright = k === 0 ? 1 : 0.62;
+    b.rect(cx, cy, cz, 1.5, 2.0, Math.floor(pageN * 0.45), 0.55 * bright + 0.1, 0.9 * bright + 0.1);
+    const tl = Math.floor(pageN * 0.55 / 7);
+    for (let l = 0; l < 7; l++) {
+      const y = cy + 0.68 - l * 0.22, len = l === 0 ? 0.7 : 0.45 + b.r() * 0.6;
+      b.line([cx - 0.55, y, cz], [cx - 0.55 + len, y, cz], tl, 0.3 * bright + 0.1, 0.55 * bright + 0.1, 0.01);
+    }
+  }
+  // OCR frame
+  const ox = -1.4, fw = 1.1, fh = 1.3, bl = 0.45, brN = Math.floor(b.n(0.05) / 8);
+  [[-1, 1], [1, 1], [1, -1], [-1, -1]].forEach(([sx, sy]) => {
+    const cx = ox + sx * fw, cy = sy * fh;
+    b.line([cx, cy, 0], [cx - sx * bl, cy, 0], brN, 0.95, 1.2, 0.012);
+    b.line([cx, cy, 0], [cx, cy - sy * bl, 0], brN, 0.95, 1.2, 0.012);
+  });
+  const slN = Math.floor(b.n(0.05) / 9);
+  for (let l = 0; l < 9; l++) {
+    const y = -1.05 + l * (2.1 / 8);
+    if (Math.abs(y) < 0.05) continue;
+    b.line([ox - 0.95, y, 0], [ox + 0.95, y, 0], slN, 0.22, 0.34, 0.01);
+  }
+  b.line([ox - 1.2, 0, 0], [ox + 1.2, 0, 0], b.n(0.05), 1.2, 1.3, 0.035);
+  // relational tables
+  const T = [[1.4, 1.05], [0.75, -1.05], [2.05, -1.05]], tw = 1.2, th = 0.74;
+  const tabN = b.n(0.16) / 3;
+  T.forEach(([cx, cy]) => {
+    // header row (filled, bright)
+    const hN = Math.floor(tabN * 0.3);
+    for (let k = 0; k < hN; k++) b.put(cx + (b.r() - 0.5) * tw, cy + th / 2 - b.r() * 0.18, (b.r() - 0.5) * 0.04, 1.0 + b.r() * 0.25);
+    // outline + cell grid
+    b.rect(cx, cy, 0, tw, th, Math.floor(tabN * 0.3), 0.5, 0.7, 0.01);
+    const gN = Math.floor(tabN * 0.4 / 5);
+    [-0.02, -0.22].forEach(dy => b.line([cx - tw / 2, cy + dy, 0], [cx + tw / 2, cy + dy, 0], gN, 0.35, 0.5, 0.008));
+    [-tw / 6, tw / 6].forEach(dx => b.line([cx + dx, cy + th / 2 - 0.18, 0], [cx + dx, cy - th / 2, 0], gN, 0.35, 0.5, 0.008));
+    b.line([cx - tw / 2, cy + th / 2 - 0.18, 0], [cx + tw / 2, cy + th / 2 - 0.18, 0], gN, 0.5, 0.7, 0.008);
+  });
+  const relN = b.n(0.012);
+  b.line([1.4 - 0.3, 1.05 - th / 2, 0], [0.75, -1.05 + th / 2, 0], relN, 0.6, 0.8, 0.01);
+  b.line([1.4 + 0.3, 1.05 - th / 2, 0], [2.05, -1.05 + th / 2, 0], relN, 0.6, 0.8, 0.01);
+  b.line([0.75 + tw / 2, -1.05, 0], [2.05 - tw / 2, -1.05, 0], relN, 0.5, 0.7, 0.01);
+  // dashboard
+  const dx = 4.3;
+  b.rect(dx, 0, 0, 1.9, 3.0, b.n(0.03), 0.3, 0.45, 0.01);
+  const dN = b.n(0.07), dcy = 0.6;
+  for (let k = 0; k < dN; k++) {
+    const f = b.r(), a = Math.PI / 2 - f * 6.2831853, rr = 0.6 + (b.r() - 0.5) * 0.16;
+    b.put(dx + Math.cos(a) * rr, dcy + Math.sin(a) * rr, (b.r() - 0.5) * 0.05, f < 0.68 ? 1.05 + b.r() * 0.25 : 0.25 + b.r() * 0.1);
+  }
+  const hs = [0.45, 0.8, 0.6, 1.0], bN = Math.floor(b.n(0.04) / 4);
+  hs.forEach((h, k) => {
+    const bx = dx - 0.54 + k * 0.36;
+    for (let q = 0; q < bN; q++) b.put(bx + (b.r() - 0.5) * 0.2, -1.3 + b.r() * h, (b.r() - 0.5) * 0.05, 0.7 + b.r() * 0.3);
+  });
+  // flow particles (x stores phase)
+  const fN = b.n(0.16);
+  for (let k = 0; k < fN; k++) b.put(b.r(), b.gauss() * 0.22, b.gauss() * 0.22, 0.85 + b.r() * 0.3, 1);
+  const a = b.finish();
+  return { a, flow: b.ex };
+}
+
+/* ---------- S5 CNN ---------- */
+const LX = [-3.7, -2.0, -0.45, 0.95, 2.2], SZ = [3.2, 2.5, 1.9, 1.35, 0.85], SL = [1, 3, 5, 7, 9], GR = [16, 12, 10, 8, 6], GAP = 0.11;
+function shapeCNN() {
+  const b = Builder(67);
+  const rep = N > 10000 ? 2 : 1;
+  for (let L = 0; L < 5; L++) {
+    const s = SZ[L], g = GR[L];
+    for (let sl = 0; sl < SL[L]; sl++) {
+      const x = LX[L] + (sl - (SL[L] - 1) / 2) * GAP;
+      const front = sl === 0;
+      for (let i = 0; i < g; i++) for (let j = 0; j < g; j++) {
+        const y = (-0.5 + i / (g - 1)) * s, z = (-0.5 + j / (g - 1)) * s;
+        let w;
+        if (L === 0) { // X-ray-like intensity: two soft lobes
+          const u = (j / (g - 1) - 0.5) * 2, v = (i / (g - 1) - 0.5) * 2;
+          const lobe = Math.exp(-((Math.abs(u) - 0.42) ** 2 * 7 + (v * 0.8) ** 2 * 2.2));
+          w = 0.3 + lobe * 0.9;
+        } else w = (front ? 0.62 : 0.42) + b.r() * 0.3;
+        for (let q = 0; q < rep; q++) b.put(x + b.gauss() * 0.012, y + b.gauss() * 0.02 * q, z + b.gauss() * 0.02 * q, w);
+      }
+    }
+  }
+  // slice outlines
+  const olN = b.n(0.16);
+  let totPer = 0;
+  for (let L = 0; L < 5; L++) totPer += SL[L] * SZ[L] * 4;
+  for (let L = 0; L < 5; L++) for (let sl = 0; sl < SL[L]; sl++) {
+    const x = LX[L] + (sl - (SL[L] - 1) / 2) * GAP, s = SZ[L], cnt = Math.floor(olN * s * 4 / totPer);
+    for (let k = 0; k < cnt; k++) {
+      let u = b.r() * 4 * s, y, z;
+      if (u < s) { y = -s / 2 + u; z = s / 2; } else if ((u -= s) < s) { y = s / 2; z = s / 2 - u; }
+      else if ((u -= s) < s) { y = s / 2 - u; z = -s / 2; } else { u -= s; y = -s / 2; z = -s / 2 + u; }
+      b.put(x, y, z, 0.7 + b.r() * 0.25);
+    }
+  }
+  // receptive-field pyramids
+  const pyN = b.n(0.1) / 16;
+  for (let L = 0; L < 4; L++) {
+    const xA = LX[L] + (SL[L] - 1) / 2 * GAP, xB = LX[L + 1] - (SL[L + 1] - 1) / 2 * GAP;
+    [[0.2, 0.18], [-0.22, -0.16]].forEach(([fy, fz]) => {
+      const cy = fy * SZ[L], cz = fz * SZ[L], hs = SZ[L] * 0.13;
+      const apex = [xB, fy * SZ[L + 1], fz * SZ[L + 1]];
+      const cs = [[cy - hs, cz - hs], [cy + hs, cz - hs], [cy + hs, cz + hs], [cy - hs, cz + hs]];
+      cs.forEach((c, k) => {
+        b.line([xA, c[0], c[1]], apex, Math.floor(pyN * 0.35), 0.6, 0.85, 0.008);
+        const n = cs[(k + 1) % 4];
+        b.line([xA, c[0], c[1]], [xA, n[0], n[1]], Math.floor(pyN * 0.15), 0.95, 1.15, 0.006);
+      });
+    });
+  }
+  // outputs
+  const xl = LX[4] + (SL[4] - 1) / 2 * GAP, s4 = SZ[4] / 2;
+  const src = [[0, 0], [s4, s4], [-s4, s4], [s4, -s4], [-s4, -s4]];
+  [-0.75, 0, 0.75].forEach((oy, k) => {
+    b.sphere(4.1, oy, 0, 0.2, b.n(0.03), 1.0, 1.3);
+    src.forEach(sp => b.line([xl, sp[0], sp[1]], [4.1, oy, 0], b.n(0.0045), 0.35, 0.55, 0.006));
+  });
+  return b.finish();
+}
+
+/* ---------- S6 skills network ---------- */
+function shapeNetwork() {
+  const b = Builder(79, -1);
+  const nodes = [];
+  for (let i = 0; i < 17; i++) {
+    const y = 1 - (i + 0.5) / 17 * 2, rr = Math.sqrt(1 - y * y), phi = i * 2.399963;
+    nodes.push([Math.cos(phi) * rr * 3.3, y * 3.3, Math.sin(phi) * rr * 3.3]);
+  }
+  const perNode = Math.floor(b.n(0.4) / 17);
+  nodes.forEach((p, i) => {
+    for (let k = 0; k < perNode; k++) {
+      const g = () => clamp(b.gauss() * 0.17, -0.4, 0.4);
+      b.put(p[0] + g(), p[1] + g(), p[2] + g(), 0.75 + b.r() * 0.45, i);
+    }
+  });
+  const edges = new Set();
+  nodes.forEach((p, i) => {
+    nodes.map((q, j) => [j, Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2])])
+      .filter(d => d[0] !== i).sort((x, y) => x[1] - y[1]).slice(0, 3)
+      .forEach(([j]) => edges.add(Math.min(i, j) + '-' + Math.max(i, j)));
+  });
+  const eN = Math.floor(b.n(0.2) / edges.size);
+  edges.forEach(k => {
+    const [i, j] = k.split('-').map(Number);
+    b.line(nodes[i], nodes[j], eN, 0.32, 0.5, 0.012);
+  });
+  const shN = b.n(0.12);
+  for (let k = 0; k < shN; k++) {
+    const u = b.r() * 2 - 1, th = b.r() * 6.2831853, s = Math.sqrt(1 - u * u);
+    b.put(s * Math.cos(th) * 4.6, u * 4.6, s * Math.sin(th) * 4.6, 0.12 + b.r() * 0.08);
+  }
+  const a = b.finish();
+  return { a, node: b.ex };
+}
+
+/* ---------- S7 ring ---------- */
+function shapeRing() {
+  const b = Builder(97);
+  const rN = b.n(0.32);
+  for (let k = 0; k < rN; k++) {
+    const a = b.r() * 6.2831853, rr = 3.6 + b.gauss() * 0.045;
+    b.put(Math.cos(a) * rr, Math.sin(a) * rr, b.gauss() * 0.04, 0.85 + b.r() * 0.35);
+  }
+  const dN = b.n(0.14);
+  for (let k = 0; k < dN; k++) {
+    const a = (Math.floor(b.r() * 72) + b.r() * 0.5) / 72 * 6.2831853, rr = 4.35 + b.gauss() * 0.02;
+    b.put(Math.cos(a) * rr, Math.sin(a) * rr, b.gauss() * 0.02, 0.45 + b.r() * 0.2);
+  }
+  const iN = b.n(0.16);
+  for (let k = 0; k < iN; k++) {
+    const a = b.r() * 6.2831853, rr = Math.sqrt(b.r()) * 3.1;
+    b.put(Math.cos(a) * rr, Math.sin(a) * rr, b.gauss() * 0.3, 0.12 + b.r() * 0.16);
+  }
+  return b.finish();
+}
+
+/* ---------- shaders ---------- */
+const VERT = /* glsl */`
+uniform float uP, uTime, uSize, uPR, uHi, uNetW, uVel, uTurb, uDrift, uAlpha, uMouseOn, uPulseAge;
+uniform vec3 uMouse, uPulseO;
+attribute vec4 aS0, aS1, aS2, aS3, aS4, aS5, aS6, aS7;
+attribute vec3 aMeta; // rand, flow, node
+varying float vE;
+varying float vA;
+float R;
+float st(float i){ float k = clamp((uP - i) * 1.7 - R * 0.7, 0., 1.); return k * k * (3. - 2. * k); }
+void main(){
+  R = aMeta.x;
+  float flow = aMeta.y, node = aMeta.z;
+
+  vec4 s4 = aS4; float fade = 1.;
+  if (flow > .5) {
+    float f = fract(aS4.x + uTime * .055);
+    s4.x = (f - .5) * 10.8;
+    s4.y += sin(f * 12.566 + R * 6.283) * .08;
+    fade = smoothstep(0., .08, f) * (1. - smoothstep(.9, 1., f));
+  }
+  vec4 s6 = aS6;
+  float an = uTime * .12, c = cos(an), sn = sin(an);
+  s6.xz = vec2(c * s6.x + sn * s6.z, -sn * s6.x + c * s6.z);
+
+  float k, turb = 0.;
+  vec4 s = aS0;
+  k = st(0.); s = mix(s, aS1, k); turb += k * (1. - k);
+  k = st(1.); s = mix(s, aS2, k); turb += k * (1. - k);
+  k = st(2.); s = mix(s, aS3, k); turb += k * (1. - k);
+  float k4 = st(3.); s = mix(s, s4, k4); turb += k4 * (1. - k4);
+  float k5 = st(4.); s = mix(s, aS5, k5); turb += k5 * (1. - k5);
+  k = st(5.); s = mix(s, s6, k); turb += k * (1. - k);
+  k = st(6.); s = mix(s, aS7, k); turb += k * (1. - k);
+  float vis = mix(1., fade, k4 * (1. - k5));
+
+  vec3 p = s.xyz; float e = s.w;
+  float ph = R * 80.;
+  vec3 nz = vec3(sin(ph * 1.3 + uTime * .9 + p.y * 1.7), sin(ph * 1.7 + uTime * .8 + p.z * 1.5), sin(ph * 2.1 + uTime * .7 + p.x * 1.3));
+  p += nz * (turb * 2.6 * uTurb + uVel);
+  p += vec3(sin(uTime * .55 + ph), cos(uTime * .47 + ph * 1.3), sin(uTime * .4 + ph * .7)) * .035 * uDrift;
+
+  vec4 wp = modelMatrix * vec4(p, 1.);
+
+  // mouse repel (z = 0 plane)
+  vec2 dm = wp.xy - uMouse.xy; float dd = length(dm);
+  float rep = 1. - smoothstep(0., 2.4, dd); rep = rep * rep * 1.2 * uMouseOn;
+  wp.xy += dm / (dd + 1e-3) * rep; wp.z += rep * .7;
+
+  // click pulse
+  vec3 dp = wp.xyz - uPulseO; float pd = length(dp);
+  float wave = exp(-pow(pd - uPulseAge * 8., 2.) * 1.2) * exp(-uPulseAge * 1.4);
+  wp.xyz += dp / (pd + 1e-3) * wave * .7; e += wave * .9;
+
+  // skill highlight
+  float on = step(-.5, uHi);
+  float hi = on * step(abs(node - uHi), .5) * uNetW;
+  float dim = 1. - .45 * on * uNetW * (1. - hi);
+
+  vec4 mv = viewMatrix * wp;
+  gl_Position = projectionMatrix * mv;
+  gl_PointSize = uSize * uPR * (.5 + min(e, 1.6) * .7) * (1. + hi * 1.3) / -mv.z;
+  vE = e + hi * .8;
+  vA = vis * dim * uAlpha;
+}`;
+const FRAG = /* glsl */`
+uniform vec3 uAccent;
+varying float vE;
+varying float vA;
+void main(){
+  vec2 c = gl_PointCoord - .5;
+  float d = dot(c, c) * 4.;
+  if (d > 1.) discard;
+  float a = 1. - d; a *= a;
+  float e = clamp(vE, 0., 1.8);
+  vec3 col = mix(vec3(.33, .40, .52), uAccent, smoothstep(.2, 1., e));
+  col += vec3(smoothstep(.85, 1.35, e) * smoothstep(.3, 0., d) * .7);
+  gl_FragColor = vec4(col, a * (.2 + min(e, 1.4) * .55) * vA);
+}`;
+
+/* ---------- labels ---------- */
+const LABELS = [
+  { s: 2, p: [-1.35, FLOOR + 5 * H + 0.75, 0], t: 'Manual · 4–5 h' },
+  { s: 2, p: [2.2, FLOOR + H + 0.1, 0.7], t: 'Automated · ~1 h', a: 'r' },
+  ...MILES.map((t, i) => { const p = career(t); return { s: 3, p: [p[0], p[1] + 0.95, p[2]], t: ['Hajj · 2024 & 2025', 'ADALAH · 2025', 'Moasherat · 2026'][i] }; }),
+  { s: 4, p: [-4.3, 1.45, 0.64], t: 'PDF' },
+  { s: 4, p: [-1.4, 1.55, 0], t: 'OCR' },
+  { s: 4, p: [1.4, 1.65, 0], t: 'Schema' },
+  { s: 4, p: [4.3, 1.75, 0], t: 'Dashboards' },
+  { s: 5, p: [LX[0], SZ[0] / 2 + 0.3, 0], t: 'Input' },
+  { s: 5, p: [4.1, 1.2, 0], t: 'Output' },
+];
+
+/* ---------- main ---------- */
+async function main() {
+  const test = document.createElement('canvas');
+  if (!(test.getContext('webgl2') || test.getContext('webgl'))) throw new Error('WebGL unavailable');
+
+  const THREE = await import('three');
+
+  const canvas = document.getElementById('gl');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
+  renderer.setClearColor(0x06080c, 1);
+  const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 16);
+  const scene = new THREE.Scene();
+
+  const name = await shapeName();
+  const pipe = shapePipeline();
+  const net = shapeNetwork();
+  const shapes = [shapeChaos(), name, shapeChart(), shapeCareer(), pipe.a, shapeCNN(), net.a, shapeRing()];
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+  shapes.forEach((a, i) => geo.setAttribute('aS' + i, new THREE.BufferAttribute(a, 4)));
+  const meta = new Float32Array(N * 3), mr = mulberry32(5);
+  for (let i = 0; i < N; i++) { meta[i * 3] = mr(); meta[i * 3 + 1] = pipe.flow[i]; meta[i * 3 + 2] = net.node[i]; }
+  geo.setAttribute('aMeta', new THREE.BufferAttribute(meta, 3));
+
+  const U = {
+    uP: { value: 0 }, uTime: { value: 0 }, uSize: { value: MOBILE_AT_LOAD ? 70 : 62 }, uPR: { value: 1 },
+    uHi: { value: -1 }, uNetW: { value: 0 }, uVel: { value: 0 }, uTurb: { value: RM ? 0 : 1 }, uDrift: { value: RM ? 0.3 : 1 },
+    uAlpha: { value: 1 }, uMouseOn: { value: 0 }, uPulseAge: { value: 100 },
+    uMouse: { value: new THREE.Vector3(99, 99, 0) }, uPulseO: { value: new THREE.Vector3(0, 0, 0) },
+    uAccent: { value: new THREE.Vector3(62 / 255, 224 / 255, 1) }, // raw sRGB #3ee0ff
+  };
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms: U, vertexShader: VERT, fragmentShader: FRAG,
+    transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+  });
+  const points = new THREE.Points(geo, mat);
+  points.frustumCulled = false;
+  scene.add(points);
+
+  /* labels */
+  const labelWrap = document.getElementById('labels');
+  const labels = LABELS.map(l => {
+    const el = document.createElement('span');
+    el.className = 'l3'; el.textContent = l.t;
+    labelWrap.appendChild(el);
+    return { ...l, el, v: new THREE.Vector3() };
+  });
+
+  /* sizing */
+  let W = 0, Hh = 0;
+  function resize() {
+    W = innerWidth; Hh = innerHeight;
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mqMobile.matches ? 1.5 : 2));
+    renderer.setSize(W, Hh, false);
+    camera.aspect = W / Hh; camera.updateProjectionMatrix();
+    U.uPR.value = renderer.getPixelRatio();
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  /* input */
+  const ndc = { x: 0, y: 0 }, mouseW = new THREE.Vector3(99, 99, 0), mouseS = new THREE.Vector3(99, 99, 0);
+  let mouseIn = false;
+  const tmp = new THREE.Vector3();
+  function toWorld(cx, cy, out) {
+    tmp.set(cx / W * 2 - 1, -(cy / Hh) * 2 + 1, 0.5).unproject(camera).sub(camera.position).normalize();
+    const t = -camera.position.z / tmp.z;
+    return out.copy(camera.position).addScaledVector(tmp, t);
+  }
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse' || !FINE) return;
+    ndc.x = e.clientX / W * 2 - 1; ndc.y = -(e.clientY / Hh) * 2 + 1;
+    toWorld(e.clientX, e.clientY, mouseW);
+    if (!mouseIn) { mouseS.copy(mouseW); mouseIn = true; }
+  }, { passive: true });
+  document.documentElement.addEventListener('pointerleave', () => { mouseIn = false; });
+  addEventListener('blur', () => { mouseIn = false; });
+  addEventListener('pointerdown', e => {
+    if (e.target.closest('a, button, .chip, input, textarea, select, label')) return;
+    toWorld(e.clientX, e.clientY, U.uPulseO.value);
+    U.uPulseAge.value = 0;
+  }, { passive: true });
+
+  let hi = -1;
+  document.querySelectorAll('.chip[data-node]').forEach(ch => {
+    const n = +ch.dataset.node;
+    const on = () => { hi = n; }, off = () => { if (hi === n) hi = -1; };
+    ch.addEventListener('mouseenter', on); ch.addEventListener('focus', on);
+    ch.addEventListener('mouseleave', off); ch.addEventListener('blur', off);
+  });
+
+  /* progress */
+  const sections = [...document.querySelectorAll('main > section')];
+  function targetP(intro) {
+    const vh = Hh;
+    let t = intro;
+    for (let i = 1; i < sections.length; i++) {
+      t += clamp((vh * 0.92 - sections[i].getBoundingClientRect().top) / (vh * 0.55));
+    }
+    return t;
+  }
+
+  const SCL = [1, 1, 1, 1, 0.8, 0.84, 1, 1.5];
+  const ANG = [[0, 0], [0, 0], [-.55, .22], [.2, .12], [-.32, .1], [-.72, .16], [0, .08], [0, .3]];
+  const interp = (P, f) => {
+    const i = Math.min(6, Math.floor(P)), t = clamp(P - i), g = t * t * (3 - 2 * t);
+    return f(i) + (f(i + 1) - f(i)) * g;
+  };
+  const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  const startT = performance.now();
+  let P = RM ? targetP(1) : 0, last = startT, lastScroll = scrollY, vel = 0, yaw = 0, pitch = 0, first = true;
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const time = (now - startT) / 1000;
+    const mobile = mqMobile.matches;
+
+    const intro = RM ? 1 : easeIO(clamp(time / 2.6));
+    const tgt = targetP(intro);
+    P += (tgt - P) * Math.min(1, dt * 3.2);
+    if (RM) P = tgt;
+
+    // scroll velocity
+    const sv = Math.abs(scrollY - lastScroll) / Math.max(dt, 1e-3); lastScroll = scrollY;
+    vel += (Math.min(0.5, sv / 5000) - vel) * Math.min(1, dt * 5);
+
+    // placement
+    const visW = 2 * 16 * Math.tan(22.5 * Math.PI / 180) * camera.aspect;
+    const nameS = Math.min(1, visW / 15.8);
+    const otherS = mobile ? Math.min(1, visW / 10.5) : Math.min(1, visW * 0.5 / 10);
+    const base = nameS + (otherS - nameS) * clamp(P - 1);
+    points.scale.setScalar(base * interp(P, i => SCL[i]));
+    const side = clamp(P - 1) * (1 - clamp(P - 6));
+    points.position.x = mobile ? 0 : side * visW * 0.24;
+    points.position.y = (mobile ? 2.3 : 1.2) * (1 - clamp(P - 1));
+    U.uAlpha.value = mobile ? 1 - 0.7 * clamp(P - 1) : 1;
+
+    const swayW = RM ? 0 : clamp(P - 1);
+    const mx = FINE && mouseIn ? ndc.x : 0, my = FINE && mouseIn ? ndc.y : 0;
+    const ty = interp(P, i => ANG[i][0]) + Math.sin(time * 0.23) * 0.14 * swayW + mx * 0.16;
+    const tp = interp(P, i => ANG[i][1]) + Math.sin(time * 0.17 + 1.3) * 0.05 * swayW - my * 0.08;
+    yaw += (ty - yaw) * 0.05; pitch += (tp - pitch) * 0.05;
+    points.rotation.set(pitch, yaw, 0);
+
+    // uniforms
+    mouseS.lerp(mouseW, 0.18);
+    U.uMouse.value.copy(mouseS);
+    U.uMouseOn.value += ((mouseIn && FINE ? 1 : 0) - U.uMouseOn.value) * 0.08;
+    U.uPulseAge.value = Math.min(100, U.uPulseAge.value + dt);
+    U.uP.value = P;
+    U.uTime.value = time;
+    U.uVel.value = RM ? 0 : vel;
+    U.uNetW.value = clamp(P - 5) * (1 - clamp(P - 6));
+    U.uHi.value = hi;
+
+    renderer.render(scene, camera);
+
+    // labels (desktop)
+    if (!mobile) {
+      points.updateMatrixWorld();
+      for (const l of labels) {
+        const w = clamp((P - (l.s - 1) - 0.4) / 0.5) * (1 - clamp((P - l.s - 0.15) / 0.4));
+        const o = w * w;
+        if (o < 0.01) { if (l.on) { l.el.style.opacity = 0; l.on = false; } continue; }
+        l.v.set(l.p[0], l.p[1], l.p[2]);
+        points.localToWorld(l.v).project(camera);
+        const sx = (l.v.x + 1) / 2 * W, sy = (1 - l.v.y) / 2 * Hh;
+        l.el.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px) ${l.a === 'r' ? 'translate(0, -50%)' : 'translate(-50%, -100%)'}`;
+        l.el.style.opacity = o.toFixed(3);
+        l.on = true;
+      }
+    }
+
+    if (first) { first = false; window.__hideLoader(); }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+main().catch(err => {
+  console.warn('3D disabled:', err && err.message ? err.message : err);
+  window.__noGL();
+});
+</script>
+</body>
+</html>
